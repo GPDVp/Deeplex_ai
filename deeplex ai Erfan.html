@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>DeepLex Mobile | هوش مصنوعی فارسی با جستجوی بی‌مرز</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* تنظیمات پایه برای موبایل کوچک */
+        body {
+            font-family: 'Vazirmatn', 'Segoe UI', system-ui, sans-serif;
+            background: #dce3ec;
+            height: 100vh;
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+        }
+
+        @keyframes fadeInUp {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes glowPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(10, 92, 142, 0.5); }
+            50% { box-shadow: 0 0 0 12px rgba(10, 92, 142, 0); }
+        }
+        @keyframes wavePro {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-6px); }
+        }
+        @keyframes blinkNeon {
+            0%, 100% { border-right-color: transparent; }
+            50% { border-right-color: #0a5c8e; }
+        }
+        @keyframes shimmerGlass {
+            0% { background-position: -300% 0; }
+            100% { background-position: 300% 0; }
+        }
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* ساختار اصلی - حالت موبایل */
+        .mobile-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            width: 100%;
+            background: #ffffff;
+            position: relative;
+        }
+
+        /* هدر فشرده مخصوص موبایل */
+        .chat-header {
+            padding: 10px 16px;
+            background: rgba(255, 255, 255, 0.98);
+            border-bottom: 1px solid rgba(10, 92, 142, 0.15);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            z-index: 5;
+        }
+        .chat-header h1 {
+            font-size: 0.85rem;
+            color: #0a5c8e;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 700;
+        }
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: #2ecc71;
+            border-radius: 50%;
+            animation: glowPulse 1.5s infinite;
+            display: inline-block;
+        }
+        .online-badge {
+            background: #0a5c8e10;
+            border: 1px solid #0a5c8e55;
+            border-radius: 30px;
+            padding: 3px 10px;
+            font-size: 0.6rem;
+            color: #0a5c8e;
+        }
+        .header-buttons {
+            display: flex;
+            gap: 8px;
+        }
+        .clear-btn, .new-chat-btn {
+            background: rgba(231, 76, 60, 0.08);
+            border: 1px solid #e74c3c66;
+            color: #c0392b;
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 0.65rem;
+            cursor: pointer;
+        }
+        .new-chat-btn {
+            background: #0a5c8e10;
+            border-color: #0a5c8e66;
+            color: #0a5c8e;
+        }
+        .drawer-toggle-btn {
+            background: linear-gradient(105deg, #0a5c8e, #1e88b5);
+            border: none;
+            color: white;
+            padding: 6px 14px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        /* ناحیه پیام‌ها */
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background: #fefefe;
+        }
+        .message {
+            display: flex;
+            gap: 8px;
+            animation: fadeInUp 0.2s ease;
+        }
+        .message.user { justify-content: flex-end; }
+        .avatar {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #eef3f9, #e2ebf3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+        .bubble {
+            max-width: 80%;
+            padding: 10px 14px;
+            border-radius: 20px;
+            font-size: 0.82rem;
+            line-height: 1.45;
+            word-break: break-word;
+        }
+        .user .bubble {
+            background: linear-gradient(125deg, #0a5c8e, #1e88b5);
+            color: white;
+            border-bottom-right-radius: 6px;
+        }
+        .ai .bubble {
+            background: #ffffff;
+            border: 1px solid #e2edf5;
+            color: #1a2c3e;
+            border-bottom-left-radius: 6px;
+        }
+        .typing {
+            display: flex;
+            gap: 5px;
+            padding: 8px 16px;
+            background: #ffffff;
+            border-radius: 30px;
+            width: fit-content;
+            border: 1px solid #cde0ee;
+        }
+        .typing span {
+            width: 7px;
+            height: 7px;
+            background: #0a5c8e;
+            border-radius: 50%;
+            animation: wavePro 1.2s infinite;
+        }
+        .response-actions {
+            margin-top: 8px;
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+        .mini-btn {
+            background: #eef3f9;
+            border: 1px solid #cde0ee;
+            padding: 4px 10px;
+            border-radius: 28px;
+            font-size: 0.6rem;
+            cursor: pointer;
+            color: #0a5c8e;
+        }
+        .cursor {
+            display: inline-block;
+            border-right: 2px solid #0a5c8e;
+            animation: blinkNeon 0.75s step-end infinite;
+            margin-right: 2px;
+        }
+
+        /* ورودی */
+        .input-area {
+            padding: 10px 12px 14px;
+            border-top: 1px solid #e2edf5;
+            background: rgba(255, 255, 255, 0.98);
+            display: flex;
+            gap: 10px;
+        }
+        #userInput {
+            flex: 1;
+            padding: 10px 16px;
+            border-radius: 40px;
+            border: 1.5px solid #d4e4f0;
+            background: #ffffff;
+            font-size: 0.85rem;
+        }
+        #userInput:focus {
+            outline: none;
+            border-color: #0a5c8e;
+        }
+        #sendBtn {
+            background: linear-gradient(105deg, #0a5c8e, #1e88b5);
+            border: none;
+            padding: 0 20px;
+            border-radius: 40px;
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        /* کشوی پایین (Drawer) - جایگزین منوی همبرگر */
+        .bottom-drawer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(248, 250, 252, 0.98);
+            backdrop-filter: blur(16px);
+            border-top-left-radius: 28px;
+            border-top-right-radius: 28px;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            z-index: 1000;
+            max-height: 70vh;
+            overflow-y: auto;
+            padding: 20px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+        .bottom-drawer.open {
+            transform: translateY(0);
+        }
+        .drawer-handle {
+            width: 50px;
+            height: 4px;
+            background: #cbd5e1;
+            border-radius: 10px;
+            margin: -8px auto 12px auto;
+        }
+        .drawer-section {
+            background: rgba(255,255,255,0.9);
+            border-radius: 24px;
+            padding: 14px;
+            border: 1px solid rgba(10,92,142,0.12);
+        }
+        .drawer-section h4 {
+            color: #0a5c8e;
+            font-size: 0.8rem;
+            margin-bottom: 10px;
+            font-weight: 800;
+        }
+        .drawer-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.3);
+            backdrop-filter: blur(3px);
+            z-index: 999;
+            display: none;
+        }
+        .drawer-overlay.show {
+            display: block;
+        }
+        .file-item {
+            background: #f1f5f9;
+            border-radius: 18px;
+            padding: 6px 10px;
+            margin: 5px 0;
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.65rem;
+        }
+        .btn-sm {
+            background: #0a5c8e;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 40px;
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+        }
+        .online-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #eef3f9;
+            border-radius: 40px;
+            padding: 6px 10px;
+            margin-top: 6px;
+        }
+        .toggle-switch {
+            width: 44px;
+            height: 22px;
+            background: #cbd5e1;
+            border-radius: 30px;
+            position: relative;
+            cursor: pointer;
+        }
+        .toggle-switch.active { background: #0a5c8e; }
+        .toggle-switch::after {
+            content: '';
+            width: 18px;
+            height: 18px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            transition: 0.2s;
+        }
+        .toggle-switch.active::after { transform: translateX(-22px); }
+        .stats { display: flex; justify-content: space-between; font-size: 0.6rem; margin-top: 8px; color: #4a6a85; }
+        .auto-update-badge {
+            font-size: 0.55rem;
+            background: #0a5c8e20;
+            border-radius: 20px;
+            padding: 4px 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .status-badge {
+            background: #2ecc7120;
+            color: #1e7e34;
+            border-radius: 40px;
+            padding: 6px;
+            text-align: center;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        select, input {
+            font-size: 0.75rem;
+            padding: 8px;
+            border-radius: 30px;
+            border: 1px solid #d4e4f0;
+        }
+        .memory-info {
+            background: #eef3f9;
+            border-radius: 20px;
+            padding: 8px;
+            font-size: 0.65rem;
+            text-align: center;
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="mobile-container">
+    <div class="chat-header">
+        <h1><span class="live-dot"></span> DeepLex Mobile</h1>
+        <div class="header-buttons">
+            <div class="online-badge" id="onlineStatusBadge">📡 آفلاین</div>
+            <button id="newChatHeaderBtn" class="new-chat-btn">✨ جدید</button>
+            <button id="clearChatBtn" class="clear-btn">🗑️</button>
+        </div>
+    </div>
+    
+    <div class="messages" id="messages">
+        <div class="message ai">
+            <div class="avatar">🧠</div>
+            <div class="bubble">به DeepLex Mobile خوش آمدید! هوش مصنوعی فارسی با جستجوی بی‌مرز در تمام سایت‌ها. برای تنظیمات و آپلود فایل، دکمه پایین را بزنید.</div>
+        </div>
+    </div>
+    
+    <div class="input-area">
+        <input type="text" id="userInput" placeholder="سوال خود را بپرسید ...">
+        <button id="sendBtn">✨</button>
+    </div>
+</div>
+
+<!-- دکمه بازکننده کشو -->
+<div style="position: fixed; bottom: 70px; left: 16px; z-index: 110;">
+    <button id="openDrawerBtn" class="drawer-toggle-btn">⚙️ تنظیمات و فایل‌ها</button>
+</div>
+
+<!-- کشوی پایین (Side Drawer جایگزین) -->
+<div class="drawer-overlay" id="drawerOverlay"></div>
+<div class="bottom-drawer" id="bottomDrawer">
+    <div class="drawer-handle"></div>
+    
+    <div class="drawer-section">
+        <h4>🔐 وضعیت دسترسی</h4>
+        <div class="status-badge">✅ فعال | دسترسی کامل</div>
+    </div>
+    
+    <div class="drawer-section">
+        <h4>🌐 جستجوی هوشمند</h4>
+        <div class="online-toggle">
+            <span>جستجوی بی‌مرز در تمام وب</span>
+            <div id="onlineToggle" class="toggle-switch"></div>
+        </div>
+        <div class="auto-update-badge" style="margin-top: 8px;">
+            <span>🧠 دانش ذخیره‌شده: <span id="knowledgeCount">0</span></span>
+        </div>
+    </div>
+    
+    <div class="drawer-section">
+        <h4>📚 بارگذاری JSON</h4>
+        <button id="addJsonBtn" class="btn-sm">➕ افزودن فایل JSON</button>
+        <input type="file" id="jsonInput" accept=".json" multiple style="display:none;">
+        <div id="fileList" class="file-list" style="max-height: 100px; overflow-y: auto; margin-top: 8px;"></div>
+        <div class="stats"><span>دسته‌ها:</span><span id="catCount">0</span> | <span>بلوک‌ها:</span><span id="wordCount">0</span></div>
+    </div>
+    
+    <div class="drawer-section">
+        <h4>🗂️ جلسات قبلی</h4>
+        <div id="chatHistoryInfo" class="memory-info">📁 تاریخچه: ۰ جلسه</div>
+        <button id="newChatDrawerBtn" class="btn-sm" style="margin-top: 8px; background:#1e88b5;">✨ چت جدید</button>
+    </div>
+    
+    <div class="drawer-section">
+        <h4>🎙️ گفتار فارسی</h4>
+        <select id="voiceSelect" style="width:100%;"></select>
+        <button id="stopSpeechBtn" class="mini-btn" style="width:100%; margin-top: 6px;">⏹️ توقف گفتار</button>
+    </div>
+</div>
+
+<script>
+    (function() {
+        "use strict";
+        
+        let isActive = true;
+        let isOnlineMode = false;
+        
+        let sentenceBlocks = {};
+        let totalBlocks = 0;
+        let jsonSources = [];
+        let masterWords = [];
+        let knowledgeCategories = [];
+        let currentSessionId = null;
+        let conversationHistory = [];
+        
+        let learnedKnowledge = new Map();
+        let knowledgeLastUsed = new Map();
+        
+        function loadLearnedKnowledge() {
+            try {
+                const saved = localStorage.getItem('deeplex_mobile_knowledge');
+                if(saved) {
+                    const parsed = JSON.parse(saved);
+                    learnedKnowledge.clear();
+                    for(let [key, value] of Object.entries(parsed)) learnedKnowledge.set(key, value);
+                }
+                updateKnowledgeCount();
+            } catch(e) {}
+        }
+        
+        function saveLearnedKnowledge() {
+            try {
+                const obj = {};
+                for(let [key, value] of learnedKnowledge.entries()) obj[key] = value;
+                localStorage.setItem('deeplex_mobile_knowledge', JSON.stringify(obj));
+                updateKnowledgeCount();
+            } catch(e) {}
+        }
+        
+        function updateKnowledgeCount() {
+            const el = document.getElementById('knowledgeCount');
+            if(el) el.textContent = learnedKnowledge.size;
+        }
+        
+        function learnAnswer(question, answer) {
+            const normalized = question.toLowerCase().trim().replace(/\s+/g, ' ');
+            if(answer && answer.length < 2500 && answer.length > 30 && !answer.includes("خطا")) {
+                if(!learnedKnowledge.has(normalized)) {
+                    learnedKnowledge.set(normalized, answer);
+                    saveLearnedKnowledge();
+                    return true;
+                }
+            }
+            return false;
+        }
+        
+        function recallFromMemory(question) {
+            const normalized = question.toLowerCase().trim().replace(/\s+/g, ' ');
+            if(learnedKnowledge.has(normalized)) return learnedKnowledge.get(normalized);
+            const words = normalized.split(/\s+/);
+            let bestMatch = null, bestScore = 0;
+            for(let [storedQ, answer] of learnedKnowledge.entries()) {
+                let score = 0;
+                for(let w of words) if(w.length > 2 && storedQ.includes(w)) score++;
+                if(score > bestScore && score > 0) { bestScore = score; bestMatch = answer; }
+            }
+            return bestMatch;
+        }
+        
+        // جستجوی فراگیر موبایل
+        async function universalWebSearch(query) {
+            const strategies = [
+                async () => {
+                    try {
+                        const url = `https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1`;
+                        const res = await fetch(url, { timeout: 4000 });
+                        const data = await res.json();
+                        if(data.AbstractText && data.AbstractText.length > 50) return `🔍 ${data.AbstractText.substring(0, 1500)}`;
+                        if(data.Definition) return `📖 ${data.Definition}`;
+                        return null;
+                    } catch(e) { return null; }
+                },
+                async () => {
+                    try {
+                        const searchUrl = `https://fa.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&format=json&origin=*&srlimit=1`;
+                        const sresp = await fetch(searchUrl);
+                        const sdata = await sresp.json();
+                        if(sdata.query?.search?.length) {
+                            const title = sdata.query.search[0].title;
+                            const cUrl = `https://fa.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=true&explaintext=true&titles=${encodeURIComponent(title)}&format=json&origin=*`;
+                            const cres = await fetch(cUrl);
+                            const cdata = await cres.json();
+                            const pages = cdata.query.pages;
+                            for(let id in pages) {
+                                const extract = pages[id].extract;
+                                if(extract) return `📚 ${extract.substring(0, 1500)}`;
+                            }
+                        }
+                        return null;
+                    } catch(e) { return null; }
+                }
+            ];
+            for(let s of strategies) {
+                let res = await s();
+                if(res) return res + "\n\nمنبع: جستجوی هوشمند";
+            }
+            return null;
+        }
+        
+        const LOCAL_KNOWLEDGE = {
+            "هوش مصنوعی": "هوش مصنوعی شامل یادگیری ماشین، شبکه‌های عصبی و پردازش زبان است.",
+            "برنامه‌نویسی": "برنامه‌نویسی ساخت نرم‌افزار با پایتون، جاوااسکریپت و ...",
+            "پایتون": "پایتون زبان قدرتمند برای علم داده و هوش مصنوعی."
+        };
+        
+        function getLocalKnowledge(q) {
+            const lower = q.toLowerCase();
+            for(let [k,v] of Object.entries(LOCAL_KNOWLEDGE)) if(lower.includes(k)) return v;
+            return null;
+        }
+        
+        function searchInJSON(question) {
+            if(Object.keys(sentenceBlocks).length === 0) return null;
+            const words = question.split(/[\s,;:.!؟?()]+/).filter(w => w.length > 2);
+            let found = [];
+            for(let cat in sentenceBlocks) {
+                for(let block of sentenceBlocks[cat]) {
+                    for(let w of words) if(block.toLowerCase().includes(w.toLowerCase())) { found.push(block); break; }
+                    if(found.length >= 8) break;
+                }
+                if(found.length >= 8) break;
+            }
+            return found;
+        }
+        
+        function formatJSONResponse(blocks) {
+            if(!blocks?.length) return null;
+            let res = "📂 از فایل JSON:\n";
+            for(let i=0;i<Math.min(blocks.length,5);i++) res += `• ${blocks[i].substring(0,300)}...\n\n`;
+            return res;
+        }
+        
+        async function hybridResponse(query) {
+            let mem = recallFromMemory(query);
+            if(mem) return mem;
+            try {
+                let mathExpr = query.replace(/×/g,'*').replace(/÷/g,'/').replace(/[^0-9+\-*/().]/g,'');
+                if(/[\+\-\*\/]/.test(mathExpr) && !/[a-zA-Z\u0600-\u06FF]/.test(mathExpr)) {
+                    let res = Function('"use strict";return ('+mathExpr+')')();
+                    if(typeof res === 'number' && isFinite(res)) return `🧮 ${mathExpr} = ${res % 1 === 0 ? res : res.toFixed(4)}`;
+                }
+            } catch(e){}
+            let local = getLocalKnowledge(query);
+            if(local) return local;
+            let jsonRes = searchInJSON(query);
+            if(jsonRes && jsonRes.length) return formatJSONResponse(jsonRes);
+            if(isOnlineMode) {
+                let web = await universalWebSearch(query);
+                if(web) { learnAnswer(query, web); return web; }
+                return "نتایج آنلاین یافت نشد. لطفاً سوال را دقیق‌تر بپرسید یا فایل JSON بارگذاری کنید.";
+            }
+            return "برای جستجوی آنلاین، حالت وب را فعال کنید یا فایل دانش خود را بارگذاری نمایید.";
+        }
+        
+        function loadSentenceBlocks(data) {
+            try {
+                let newBlocks = {};
+                let total = 0;
+                if(data.sentence_blocks && typeof data.sentence_blocks === 'object') {
+                    for(let [cat, blocks] of Object.entries(data.sentence_blocks)) {
+                        if(Array.isArray(blocks)) { newBlocks[cat] = [...blocks]; total += blocks.length; }
+                    }
+                } else if(data.categories && typeof data.categories === 'object') {
+                    for(let [cat, items] of Object.entries(data.categories)) {
+                        if(Array.isArray(items)) { newBlocks[cat] = items.filter(i=>typeof i==='string'); total += newBlocks[cat].length; }
+                    }
+                } else if(Array.isArray(data)) {
+                    newBlocks["دانش"] = data.filter(d=>typeof d==='string');
+                    total = newBlocks["دانش"].length;
+                }
+                if(Object.keys(newBlocks).length === 0) return false;
+                sentenceBlocks = newBlocks;
+                totalBlocks = total;
+                knowledgeCategories = Object.keys(sentenceBlocks);
+                return true;
+            } catch(e) { return false; }
+        }
+        
+        // توابع چت
+        function addToHistory(role, content) { conversationHistory.push({ role, content, time: Date.now() }); saveCurrentSession(); renderChatHistory(); }
+        function renderChatHistory() {
+            const container = document.getElementById('messages');
+            if(!container) return;
+            container.innerHTML = '';
+            if(!conversationHistory.length) container.innerHTML = '<div class="message ai"><div class="avatar">🧠</div><div class="bubble">جلسه جدید. سوال خود را بپرسید.</div></div>';
+            else for(let msg of conversationHistory) {
+                let div = document.createElement('div'); div.className = `message ${msg.role}`;
+                div.innerHTML = `<div class="avatar">${msg.role==='user'?'👤':'🧠'}</div><div class="bubble">${escapeHtml(msg.content)}</div>`;
+                container.appendChild(div);
+            }
+            container.scrollTop = container.scrollHeight;
+        }
+        function saveCurrentSession() { if(!currentSessionId) return; let sessions = JSON.parse(localStorage.getItem('deeplex_mobile_sessions')||'[]'); let idx = sessions.findIndex(s=>s.id===currentSessionId); let data = { id: currentSessionId, title: conversationHistory[0]?.content?.substring(0,30)||"چت", date: new Date().toISOString(), messages: conversationHistory }; if(idx!==-1) sessions[idx]=data; else sessions.unshift(data); if(sessions.length>40) sessions.pop(); localStorage.setItem('deeplex_mobile_sessions', JSON.stringify(sessions)); updateSessionList(); }
+        function createNewSession() { if(conversationHistory.length) saveCurrentSession(); currentSessionId = Date.now()+'_'+Math.random().toString(36).substr(2,6); conversationHistory = []; renderChatHistory(); addStaticMessage("✨ جلسه جدید"); updateSessionList(); }
+        function updateSessionList() { let sessions = JSON.parse(localStorage.getItem('deeplex_mobile_sessions')||'[]'); let infoDiv = document.getElementById('chatHistoryInfo'); if(!infoDiv) return; if(!sessions.length) infoDiv.innerHTML = '📁 تاریخچه: ۰ جلسه'; else { let html = `<div style="max-height:100px; overflow-y:auto;">`; sessions.slice(0,6).forEach(s=>{ html+=`<div style="display:flex; justify-content:space-between; padding:4px 0; font-size:0.6rem;"><span style="cursor:pointer;color:${s.id===currentSessionId?'#0a5c8e':'#555'}" onclick="window.loadSession('${s.id}')">📄 ${s.title.substring(0,18)}</span><button onclick="window.delSession('${s.id}', event)" style="background:none; border:none; color:#e74c3c;">✖</button></div>`; }); html+=`</div><span>${sessions.length} جلسه</span>`; infoDiv.innerHTML = html; } }
+        function addStaticMessage(t) { let div = document.createElement('div'); div.className='message ai'; div.innerHTML=`<div class="avatar">🧠</div><div class="bubble">${escapeHtml(t)}</div>`; document.getElementById('messages').appendChild(div); document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight; addToHistory('ai', t); }
+        async function addAIMessageWithTyping(text) { let div = document.createElement('div'); div.className='message ai'; let bid='msg_'+Date.now(); div.innerHTML=`<div class="avatar">🧠</div><div class="bubble" id="${bid}"></div>`; document.getElementById('messages').appendChild(div); let bubbleElem = document.getElementById(bid); if(bubbleElem) { bubbleElem.innerHTML=''; for(let i=0;i<text.length;i++) { bubbleElem.innerHTML=text.substring(0,i+1)+'<span class="cursor"></span>'; await new Promise(r=>setTimeout(r,4)); } bubbleElem.innerHTML=text; let footer = document.createElement('div'); footer.className='response-actions'; footer.innerHTML=`<button class="mini-btn speak-btn">🔊 گفتار</button><button class="mini-btn stop-btn">⏹️ توقف</button>`; bubbleElem.appendChild(footer); footer.querySelector('.speak-btn').onclick=()=>speak(text); footer.querySelector('.stop-btn').onclick=()=>stopSpeech(); } document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight; addToHistory('ai', text); }
+        function escapeHtml(s) { return s.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])); }
+        let typingDiv = null;
+        function showTyping() { if(typingDiv) typingDiv.remove(); typingDiv = document.createElement('div'); typingDiv.className='message ai'; typingDiv.innerHTML=`<div class="avatar">🧠</div><div class="typing"><span></span><span></span><span></span></div>`; document.getElementById('messages').appendChild(typingDiv); document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight; }
+        function hideTyping() { if(typingDiv) typingDiv.remove(); typingDiv=null; }
+        async function processQuery() { let q = document.getElementById('userInput').value.trim(); if(!q) return; addUserMessage(q); document.getElementById('userInput').value=''; showTyping(); await new Promise(r=>setTimeout(r,20)); let ans = await hybridResponse(q); hideTyping(); await addAIMessageWithTyping(ans); saveCurrentSession(); }
+        function addUserMessage(t) { let div = document.createElement('div'); div.className='message user'; div.innerHTML=`<div class="avatar">👤</div><div class="bubble">${escapeHtml(t)}</div>`; document.getElementById('messages').appendChild(div); document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight; addToHistory('user', t); }
+        function toggleOnlineMode() { isOnlineMode=!isOnlineMode; const toggle=document.getElementById('onlineToggle'); const badge=document.getElementById('onlineStatusBadge'); if(isOnlineMode) { toggle.classList.add('active'); badge.innerHTML="🌍 آنلاین"; addStaticMessage("🌍 جستجوی بی‌مرز فعال شد."); } else { toggle.classList.remove('active'); badge.innerHTML="📡 آفلاین"; addStaticMessage("📡 حالت آفلاین"); } }
+        function clearChatUI() { conversationHistory=[]; renderChatHistory(); saveCurrentSession(); addStaticMessage("✨ پاک شد"); }
+        function newChat() { createNewSession(); closeDrawer(); }
+        let speech = window.speechSynthesis, voices=[];
+        function loadVoices() { if(!speech) return; voices=speech.getVoices(); let sel=document.getElementById('voiceSelect'); if(sel){ sel.innerHTML=''; for(let i=0;i<voices.length;i++) if(voices[i].lang.includes('fa')||voices[i].name.includes('Persian')){ let opt=document.createElement('option'); opt.value=i; opt.textContent=voices[i].name; sel.appendChild(opt); } } }
+        if(speech) { speech.onvoiceschanged=loadVoices; setTimeout(loadVoices,200); }
+        function speak(text){ if(!speech) return; stopSpeech(); let utterance=new SpeechSynthesisUtterance(text.replace(/<[^>]*>/g,'')); let idx=document.getElementById('voiceSelect')?.value; if(idx&&voices[parseInt(idx)]) utterance.voice=voices[parseInt(idx)]; utterance.rate=0.85; utterance.lang='fa-IR'; speech.speak(utterance); }
+        function stopSpeech(){ if(speech) speech.cancel(); }
+        
+        // کشو
+        const drawer = document.getElementById('bottomDrawer');
+        const overlay = document.getElementById('drawerOverlay');
+        function openDrawer() { drawer.classList.add('open'); overlay.classList.add('show'); }
+        function closeDrawer() { drawer.classList.remove('open'); overlay.classList.remove('show'); }
+        document.getElementById('openDrawerBtn')?.addEventListener('click', openDrawer);
+        overlay?.addEventListener('click', closeDrawer);
+        
+        // events
+        document.getElementById('addJsonBtn')?.addEventListener('click',()=>document.getElementById('jsonInput').click());
+        document.getElementById('jsonInput')?.addEventListener('change',(e)=>{ Array.from(e.target.files).forEach(file=>{ let reader=new FileReader(); reader.onload=ev=>{ try{ let data=JSON.parse(ev.target.result); if(loadSentenceBlocks(data)){ jsonSources.push({name:file.name, blockCount:totalBlocks}); renderFileList(); updateStats(); addStaticMessage(`✅ ${file.name} بارگذاری شد`); } else addStaticMessage(`⚠️ فرمت نامعتبر`); } catch(err){ addStaticMessage(`❌ خطا`); } }; reader.readAsText(file); }); });
+        document.getElementById('sendBtn')?.addEventListener('click',processQuery);
+        document.getElementById('userInput')?.addEventListener('keypress',(e)=>{ if(e.key==='Enter') processQuery(); });
+        document.getElementById('stopSpeechBtn')?.addEventListener('click',stopSpeech);
+        document.getElementById('clearChatBtn')?.addEventListener('click',clearChatUI);
+        document.getElementById('newChatHeaderBtn')?.addEventListener('click',newChat);
+        document.getElementById('newChatDrawerBtn')?.addEventListener('click',newChat);
+        document.getElementById('onlineToggle')?.addEventListener('click',toggleOnlineMode);
+        function updateStats(){ document.getElementById('catCount').innerHTML=knowledgeCategories.length; document.getElementById('wordCount').innerHTML=totalBlocks; }
+        function renderFileList(){ let container=document.getElementById('fileList'); if(!container) return; if(!jsonSources.length) { container.innerHTML='<div style="text-align:center;color:#6c8db0;">هیچ فایلی نیست</div>'; return; } container.innerHTML=jsonSources.map((src,i)=>`<div class="file-item"><span>📘 ${src.name.substring(0,25)}</span><button onclick="window.removeJson(${i})">✖</button></div>`).join(''); }
+        window.removeJson=function(idx){ jsonSources.splice(idx,1); if(!jsonSources.length){ sentenceBlocks={}; totalBlocks=0; knowledgeCategories=[]; } updateStats(); renderFileList(); addStaticMessage("فایل حذف شد"); };
+        window.loadSession=function(id){ let sessions=JSON.parse(localStorage.getItem('deeplex_mobile_sessions')||'[]'); let s=sessions.find(s=>s.id===id); if(s){ if(conversationHistory.length && currentSessionId!==id) saveCurrentSession(); currentSessionId=s.id; conversationHistory=s.messages||[]; renderChatHistory(); updateSessionList(); closeDrawer(); } };
+        window.delSession=function(id,e){ if(e) e.stopPropagation(); let sessions=JSON.parse(localStorage.getItem('deeplex_mobile_sessions')||'[]'); sessions=sessions.filter(s=>s.id!==id); localStorage.setItem('deeplex_mobile_sessions',JSON.stringify(sessions)); if(currentSessionId===id) createNewSession(); else updateSessionList(); };
+        
+        loadLearnedKnowledge();
+        let sessions=JSON.parse(localStorage.getItem('deeplex_mobile_sessions')||'[]');
+        if(sessions.length && sessions[0]) { currentSessionId=sessions[0].id; conversationHistory=sessions[0].messages||[]; renderChatHistory(); } else createNewSession();
+        updateSessionList();
+        document.getElementById('userInput').disabled = false;
+        document.getElementById('sendBtn').disabled = false;
+    })();
+</script>
+</body>
+</html>
